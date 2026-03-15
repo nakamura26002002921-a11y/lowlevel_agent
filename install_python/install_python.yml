@@ -1,12 +1,16 @@
-- hosts: all
+- hosts: localhost
+  connection: local
+  gather_facts: yes
   become: yes
 
   vars:
-    VERSION: "3.11.2"
-    INSTALL_PATH: "/opt/python311"
+    VERSION: "{{ VERSION | default('3.11.2') }}"
+    INSTALL_PATH: "{{ INSTALL_PATH | default('/opt/python311') }}"
+    SRC_DIR: "/tmp/Python-{{ VERSION }}"
+    TARBALL: "/tmp/python.tgz"
 
   tasks:
-    - name: Install build dependencies
+    - name: Ensure build dependencies are installed
       apt:
         name:
           - build-essential
@@ -20,22 +24,24 @@
         state: present
         update_cache: yes
 
-    - name: Download Python source
+    - name: Download Python source tarball
       get_url:
         url: "https://www.python.org/ftp/python/{{ VERSION }}/Python-{{ VERSION }}.tgz"
-        dest: "/tmp/python.tgz"
+        dest: "{{ TARBALL }}"
+        mode: '0644'
 
     - name: Extract Python source
       unarchive:
-        src: "/tmp/python.tgz"
+        src: "{{ TARBALL }}"
         dest: "/tmp"
         remote_src: yes
 
-    - name: Build and install Python
+    - name: Configure, build and install Python (idempotent)
       shell: |
-        cd /tmp/Python-{{ VERSION }}
+        set -e
+        cd {{ SRC_DIR }}
         ./configure --prefix={{ INSTALL_PATH }}
-        make -j4
+        make -j$(nproc)
         make install
       args:
         creates: "{{ INSTALL_PATH }}/bin/python3"
