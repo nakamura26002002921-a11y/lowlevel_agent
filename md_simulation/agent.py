@@ -76,6 +76,7 @@ def simulation_set(base_path, simulation_information = None):
                         distance = float(content)
                     except ValueError:
                         distance = None
+            print(f"Done {key}")
         return water_model, force_field,  waterboxfile, distance
     except:
         return False
