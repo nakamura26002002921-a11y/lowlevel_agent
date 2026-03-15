@@ -37,7 +37,7 @@ def simulation_set(base_path, simulation_information = None):
         for c in cmds:
             key = next(iter(c))
             if key == "makemdp":
-                msg =f"Task:\n{c["prompts"]}"
+                msg =f"Task:\n{c['prompts']}"
                 if simulation_information:
                     msg = f"Simulation conditions from here:\n{simulation_information}\n\n{msg}"
                 res = query(
@@ -50,7 +50,7 @@ def simulation_set(base_path, simulation_information = None):
                 with open(os.path.join(mdp_dir, f"{c["makemdp"]}.mdp"), "w", encoding="utf-8") as f:
                     f.write(code)
             if key == "task_type":
-                msg =f"Task:\n{c["prompts"]}"
+                msg =f"Task:\n{c['prompts']}"
                 if simulation_information:
                     msg = f"Simulation conditions from here:\n{simulation_information}\n{msg}"
                 if distance:
