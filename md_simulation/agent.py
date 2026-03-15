@@ -11,10 +11,8 @@ BASE_DIR = os.path.dirname(__file__)
 def initialization(base_path):
     if not base_path:
         raise ValueError("PATH is required")
-    playbook_path = os.path.join(BASE_DIR, "create_dirs.yml")
-    cmd = ["ansible-playbook", "-i", "hosts", playbook_path]
-    ev = f"PATH={shlex.quote(str(base_path))}"
-    cmd.extend(["--extra-vars", ev])
+    playbook_path = BASE_DIR / "create_dirs.yml"
+    cmd = ["ansible-playbook", str(playbook_path), "-i", "localhost,", "-c", "local", "--extra-vars", f"PATH={shlex.quote(str(base_path))}"]
     subprocess.run(cmd, check=True)
 
 def simulation_set(base_path, simulation_information = None):    
