@@ -1,0 +1,29 @@
+- hosts: all
+  become: yes
+
+  vars:
+    DIRS:
+      - md
+      - sys
+      - em
+      - nvt
+      - npt_br
+      - npt_pr
+
+  tasks:
+    - name: Ensure base path exists
+      file:
+        path: "{{ PATH }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Create required subdirectories under PATH
+      file:
+        path: "{{ PATH }}/{{ item }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+      loop: "{{ DIRS }}"
