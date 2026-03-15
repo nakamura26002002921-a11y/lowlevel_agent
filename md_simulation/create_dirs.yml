@@ -4,6 +4,7 @@
   vars:
     DIRS:
       - md
+      - mdp
       - sys
       - em
       - nvt
