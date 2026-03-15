@@ -47,7 +47,7 @@ def simulation_set(base_path, simulation_information = None):
                 )
                 content = getattr(res, "content", "")
                 code = re.sub(r'^```.*?\n|```$', '', content, flags=re.MULTILINE).strip()
-                with open(os.path.join(mdp_dir, f"{c["makemdp"]}.mdp"), "w", encoding="utf-8") as f:
+                with open(os.path.join(mdp_dir, f"{c['makemdp']}.mdp"), "w", encoding="utf-8") as f:
                     f.write(code)
             if key == "task_type":
                 msg =f"Task:\n{c['prompts']}"
