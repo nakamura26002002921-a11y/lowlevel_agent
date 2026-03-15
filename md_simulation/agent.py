@@ -211,25 +211,25 @@ def npt_br(base_path, GMX="gmx"):
     if not base_path:
         raise ValueError("PATH is required")
     sys_dir     = os.path.join(base_path, "sys")
+    nvt_dir     = os.path.join(base_path, "nvt")
     npt_br_dir  = os.path.join(base_path, "npt_br")
-    npt_pr_dir     = os.path.join(base_path, "npt_pr")
     mdp_dir     = os.path.join(base_path, "mdp")
-
     md_top      = os.path.join(sys_dir, "MD.top")
-    npt_pr_mdp = os.path.join(mdp_dir, "npt_pr.mdp")
-    npt_br_gro = os.path.join(npt_br_dir, "npt_br.gro")
-    npt_pr_tpr = os.path.join(npt_pr_dir, "npt_pr.tpr")
-    npt_pr_prefix = os.path.join(npt_pr_dir, "npt_pr")
-
+    npt_br_mdp  = os.path.join(mdp_dir, "npt_br.mdp")
+    nvt_gro     = os.path.join(nvt_dir, "nvt.gro")
+    npt_br_tpr  = os.path.join(npt_br_dir, "npt_br.tpr")
+    npt_br_prefix = os.path.join(npt_br_dir, "npt_br")
     cmds = [
-        [GMX, "grompp", "-f", npt_pr_mdp, "-c", npt_br_gro, "-r", npt_br_gro, "-p", md_top, "-o", npt_pr_tpr],
-        [GMX, "mdrun", "-deffnm", npt_pr_prefix]
+        [GMX, "grompp", "-f", npt_br_mdp, "-c", nvt_gro, "-r", nvt_gro, "-p", md_top, "-o", npt_br_tpr],
+        [GMX, "mdrun", "-deffnm", npt_br_prefix]
     ]
     try:
         for c in cmds:
-            subprocess.run(c, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(c, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
         return True
-    except:
+    except subprocess.CalledProcessError:
+        return False
+    except Exception:
         return False
     
 def npt_pr(base_path, GMX="gmx"):
