@@ -3,5 +3,5 @@ from pathlib import Path
 BASE_DIR = Path(__file__).parent
 def installpython(version, path):
     playbook_path = BASE_DIR / "install_python.yml"
-    cmd = ["ansible-playbook", str(playbook_path), "-e", f"VERSION={version} INSTALL_PATH={path}", "-c", "local"]
+    cmd = ["ansible-playbook", str(playbook_path), "-e", f"VERSION={version} INSTALL_PATH={path}", "-i", "localhost,", "-c", "local"]
     subprocess.run(cmd, check=True)
