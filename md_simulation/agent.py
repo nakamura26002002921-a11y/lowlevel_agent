@@ -8,7 +8,6 @@ import shutil
 
 BASE_DIR = os.path.dirname(__file__)
 
-
 def initialization(base_path):
     if not base_path:
         raise ValueError("PATH is required")

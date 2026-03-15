@@ -1,0 +1,41 @@
+- hosts: all
+  become: yes
+
+  vars:
+    VERSION: "3.11.2"
+    INSTALL_PATH: "/opt/python311"
+
+  tasks:
+    - name: Install build dependencies
+      apt:
+        name:
+          - build-essential
+          - libssl-dev
+          - zlib1g-dev
+          - libncurses5-dev
+          - libffi-dev
+          - libsqlite3-dev
+          - libreadline-dev
+          - libbz2-dev
+        state: present
+        update_cache: yes
+
+    - name: Download Python source
+      get_url:
+        url: "https://www.python.org/ftp/python/{{ VERSION }}/Python-{{ VERSION }}.tgz"
+        dest: "/tmp/python.tgz"
+
+    - name: Extract Python source
+      unarchive:
+        src: "/tmp/python.tgz"
+        dest: "/tmp"
+        remote_src: yes
+
+    - name: Build and install Python
+      shell: |
+        cd /tmp/Python-{{ VERSION }}
+        ./configure --prefix={{ INSTALL_PATH }}
+        make -j4
+        make install
+      args:
+        creates: "{{ INSTALL_PATH }}/bin/python3"
