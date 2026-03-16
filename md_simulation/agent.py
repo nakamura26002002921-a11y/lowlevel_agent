@@ -145,7 +145,7 @@ def system_build(base_path, pdb_path, FF, DISTANCE, WATER_MODEL, WATERBOXFILE, G
     try:
         for c in cmds:
             key = next(iter(c))
-            elif key == "cmd":
+            if key == "cmd":
                 subprocess.run(c["cmd"])
             elif key == "cmd-input":
                 subprocess.run(c["cmd-input"], input=c["input"], text=True)
