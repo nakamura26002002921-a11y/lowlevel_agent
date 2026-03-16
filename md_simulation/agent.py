@@ -100,7 +100,7 @@ def get_pdb(base_path, pdbid):
     return out_path
 
 
-def system_build(base_path, pdb_path, FF, DISTANCE, WATER, WATER_MODEL, GMX="gmx"):
+def system_build(base_path, pdb_path, FF, DISTANCE, WATER_MODEL, WATERBOXFILE, GMX="gmx"):
     if not base_path:
         raise ValueError("BASEPATH is required")
     if not pdb_path:
@@ -130,10 +130,10 @@ def system_build(base_path, pdb_path, FF, DISTANCE, WATER, WATER_MODEL, GMX="gmx
 
     cmds = [
         {"ansible": "grep","file":(pdb_path, cle_pdb), "-v":"HETATM"},
-        {"cmd": [GMX, "pdb2gmx", "-f", cle_pdb, "-o", pro_gro, "-water", WATER, "-p", pro_top, "-ff", FF]},
+        {"cmd": [GMX, "pdb2gmx", "-f", cle_pdb, "-o", pro_gro, "-water", WATER_MODEL, "-p", pro_top, "-ff", FF]},
         {"cmd": [GMX, "editconf", "-f", pro_gro, "-o", nbox_gro, "-c", "-d", str(DISTANCE), "-bt", "cubic"]},
         {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp.yml"),"-i","localhost,","-c","local","--extra-vars",f"src={pro_top} dst={sol_top}"]},
-        {"cmd": [GMX, "solvate", "-cp", nbox_gro, "-cs", WATER_MODEL, "-o", sol_gro, "-p", sol_top]},
+        {"cmd": [GMX, "solvate", "-cp", nbox_gro, "-cs", WATERBOXFILE, "-o", sol_gro, "-p", sol_top]},
         {"cmd": [GMX, "grompp", "-f", ions_mdp, "-c", sol_gro, "-p", sol_top, "-o", ions_tpr, "-maxwarn", "1"]}, 
         {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp.yml"),"-i","localhost,","-c","local","--extra-vars",f"src={sol_top} dst={ions_top}"]},
         {"cmd-input": [GMX, "genion", "-s", ions_tpr, "-o", ions_gro, "-p", ions_top, "-pname", "NA", "-nname", "CL", "-neutral"], "input": "SOL\n"},
