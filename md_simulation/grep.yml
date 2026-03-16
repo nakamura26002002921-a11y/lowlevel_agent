@@ -4,14 +4,9 @@
   connection: local
   gather_facts: false
 
-  vars:
-    before_path: ""
-    after_path: ""
-    exclude_string: ""
-
   tasks:
     - name: Filter lines containing a specific string
-      ansible.builtin.shell: grep -v "{{ exclude_string }}" "{{ before_path }}" > "{{ after_path }}"
+      ansible.builtin.shell: grep -v "{{ exstr }}" "{{ src }}" > "{{ dst }}"
       args:
         executable: /bin/bash
       changed_when: false
