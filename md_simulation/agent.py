@@ -7,6 +7,7 @@ import shlex
 import shutil
 
 BASE_DIR = os.path.dirname(__file__)
+SHELL_DIR = str(Path(__file__).parent.parent / "shellcommands")
 
 def initialization(base_path):
     if not base_path:
@@ -127,23 +128,31 @@ def system_build(base_path, pdb_path, FF, DISTANCE, WATER, WATER_MODEL, GMX="gmx
     md_top      = os.path.join(sys_dir, "MD.top")
 
     cmds = [
-        {"grep": ["grep", "-v", "HOH", pdb_path], "stdout_path": cle_pdb},
+        {"ansible": "grep","file":(pdb_path, cle_pdb), "-v":"HOH"},
         {"cmd": [GMX, "pdb2gmx", "-f", cle_pdb, "-o", pro_gro, "-water", WATER, "-p", pro_top, "-ff", FF]},
         {"cmd": [GMX, "editconf", "-f", pro_gro, "-o", nbox_gro, "-c", "-d", str(DISTANCE), "-bt", "cubic"]},
-        {"copy": (pro_top, sol_top)},
+        {"ansible": "copy","file":(pro_top, sol_top)},
         {"cmd": [GMX, "solvate", "-cp", nbox_gro, "-cs", WATER_MODEL, "-o", sol_gro, "-p", sol_top]},
         {"cmd": [GMX, "grompp", "-f", ions_mdp, "-c", sol_gro, "-p", sol_top, "-o", ions_tpr, "-maxwarn", "1"]}, 
-        {"copy": (sol_top, ions_top)},
+        {"ansible": "copy","file":(sol_top, ions_top)},
         {"cmd-input": [GMX, "genion", "-s", ions_tpr, "-o", ions_gro, "-p", ions_top, "-pname", "NA", "-nname", "CL", "-neutral"], "input": "SOL\n"},
-        {"copy": (ions_gro, md_gro)},
-        {"copy": (ions_top, md_top)},
+        {"ansible": "copy","file":(ions_gro, md_gro)},
+        {"ansible": "copy","file":(ions_top, md_top)},
     ]
     try:
         for c in cmds:
             key = next(iter(c))
-            if key == "grep":
-                with open(c["stdout_path"], "w") as f:
-                    subprocess.run(c["grep"], stdout=f, stderr=subprocess.DEVNULL, check=True)
+            if key == "ansible":
+                src, dst = c["file"]
+                if c["ansible"] == "copy":
+                    asb_cmd = ["ansible-playbook", os.path.join(SHELL_DIR, "cp.yml"), "-i", "localhost,", "-c", "local", "--extra-vars", f"src={shlex.quote(str(src))} dst={shlex.quote(str(dst))}" ]
+                    subprocess.run(asb_cmd, check=True)
+                elif c["ansible"] == "grep":
+                    exclude = c["-v"]
+                    asb_cmd = [ "ansible-playbook", os.path.join(BASE_DIR, "grep-v.yml"), "-i", "localhost,", "-c", "local", "--extra-vars", f"before_path={shlex.quote(str(src))} " f"after_path={shlex.quote(str(dst))} " f"exclude_string={shlex.quote(exclude)}"]
+                    subprocess.run(asb_cmd, check=True)
+                else:
+                    return False
             elif key == "cmd":
                 subprocess.run(c["cmd"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             elif key == "cmd-input":
