@@ -5,9 +5,9 @@
   gather_facts: false
 
   vars:
-    before_path: "{{ PATH }}/input_file"
-    after_path: "{{ PATH }}/filtered_file"
-    exclude_string: "XXX"
+    before_path: ""
+    after_path: ""
+    exclude_string: ""
 
   tasks:
     - name: Filter lines containing a specific string
