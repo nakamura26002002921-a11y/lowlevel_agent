@@ -153,6 +153,7 @@ def system_build(base_path, pdb_path, FF, DISTANCE, WATER, WATER_MODEL, GMX="gmx
                 shutil.copy(src, dst)
             else:
                 return False
+            print(f"Done {key}")
         return True
     except:
         return False
