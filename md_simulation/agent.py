@@ -19,6 +19,7 @@ def simulation_set(base_path, simulation_information = None):
     if not base_path:
         raise ValueError("PATH is required.")
     mdp_dir = os.path.join(base_path, "mdp")
+    aimodel = "local/ai/gemma3-qat@http://172.17.0.1:12434/v1"
     cmds = [
         {"makemdp": "ions" , "prompts": "Generate a valid GROMACS ions.mdp file for ion addition (grompp before genion). Use typical settings for energy minimization preparation. Output only the mdp file content."},
         {"makemdp": "em" , "prompts": "Generate a valid GROMACS em.mdp file for energy minimization. Use steepest descent minimization and typical parameters used in protein simulations. Output only the mdp file content."},
@@ -39,7 +40,7 @@ def simulation_set(base_path, simulation_information = None):
                 if simulation_information:
                     msg = f"Simulation conditions from here:\n{simulation_information}\n\n{msg}"
                 res = query(
-                    model_name="local/ai/gemma3-qat@http://127.0.0.1:12434/v1",
+                    model_name=aimodel,
                     msg=msg,
                     system_msg=("You are an expert in molecular dynamics simulations using GROMACS. Generate valid mdp configuration files. Follow the provided simulation conditions if available. Return only the mdp file content without explanations.")
                 )
@@ -60,7 +61,7 @@ def simulation_set(base_path, simulation_information = None):
                 if water_model:
                     msg = f"water model: {water_model}\n{msg}"
                 res = query(
-                    model_name="local/ai/gemma3-qat@http://127.0.0.1:12434/v1",
+                    model_name=aimodel,
                     msg=msg,
                     system_msg="You are an information extraction assistant. Return only the requested value without explanations."
                 )
