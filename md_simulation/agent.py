@@ -109,8 +109,10 @@ def system_build(base_path, pdb_path, FF, DISTANCE, WATER_MODEL, WATERBOXFILE, G
         raise ValueError("forcefield is required")
     if not DISTANCE:
         raise ValueError("distance is required")
-    if not WATER:
+    if not WATER_MODEL:
         raise ValueError("water-model is required")
+    if not WATERBOXFILE:
+        raise ValueError("water box file is required")
     
     sys_dir     = os.path.join(base_path, "sys")
     mdp_dir     = os.path.join(base_path, "mdp")
