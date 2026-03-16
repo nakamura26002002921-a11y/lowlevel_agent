@@ -129,7 +129,7 @@ def system_build(base_path, pdb_path, FF, DISTANCE, WATER, WATER_MODEL, GMX="gmx
     md_top      = os.path.join(sys_dir, "MD.top")
 
     cmds = [
-        {"ansible": "grep","file":(pdb_path, cle_pdb), "-v":"HETAM"},
+        {"ansible": "grep","file":(pdb_path, cle_pdb), "-v":"HETATM"},
         {"cmd": [GMX, "pdb2gmx", "-f", cle_pdb, "-o", pro_gro, "-water", WATER, "-p", pro_top, "-ff", FF]},
         {"cmd": [GMX, "editconf", "-f", pro_gro, "-o", nbox_gro, "-c", "-d", str(DISTANCE), "-bt", "cubic"]},
         {"ansible": "copy","file":(pro_top, sol_top)},
