@@ -129,7 +129,7 @@ def system_build(base_path, pdb_path, FF, DISTANCE, WATER, WATER_MODEL, GMX="gmx
     md_top      = os.path.join(sys_dir, "MD.top")
 
     cmds = [
-        {"ansible": "grep","file":(pdb_path, cle_pdb), "-v":"HOH"},
+        {"ansible": "grep","file":(pdb_path, cle_pdb), "-v":"ATOM"},
         {"cmd": [GMX, "pdb2gmx", "-f", cle_pdb, "-o", pro_gro, "-water", WATER, "-p", pro_top, "-ff", FF]},
         {"cmd": [GMX, "editconf", "-f", pro_gro, "-o", nbox_gro, "-c", "-d", str(DISTANCE), "-bt", "cubic"]},
         {"ansible": "copy","file":(pro_top, sol_top)},
@@ -150,7 +150,7 @@ def system_build(base_path, pdb_path, FF, DISTANCE, WATER, WATER_MODEL, GMX="gmx
                     subprocess.run(asb_cmd, check=True)
                 elif c["ansible"] == "grep":
                     exclude = c["-v"]
-                    asb_cmd = [ "ansible-playbook", os.path.join(BASE_DIR, "grep-v.yml"), "-i", "localhost,", "-c", "local", "--extra-vars", f"before_path={shlex.quote(str(src))} " f"after_path={shlex.quote(str(dst))} " f"exclude_string={shlex.quote(exclude)}"]
+                    asb_cmd = [ "ansible-playbook", os.path.join(BASE_DIR, "grep.yml"), "-i", "localhost,", "-c", "local", "--extra-vars", f"before_path={shlex.quote(str(src))} " f"after_path={shlex.quote(str(dst))} " f"exclude_string={shlex.quote(exclude)}"]
                     subprocess.run(asb_cmd, check=True)
                 else:
                     return False
