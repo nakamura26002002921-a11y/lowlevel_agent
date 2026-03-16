@@ -131,7 +131,7 @@ def system_build(base_path, pdb_path, FF, DISTANCE, WATER_MODEL, WATERBOXFILE, G
     md_top      = os.path.join(sys_dir, "MD.top")
 
     cmds = [
-        {"ansible": "grep","file":(pdb_path, cle_pdb), "-v":"HETATM"},
+        {"cmd": [ "ansible-playbook", os.path.join(BASE_DIR, "grep.yml"), "-i", "localhost,", "-c", "local", "--extra-vars",f"src={pdb_path} dst={cle_pdb}" exstr={"HETATM"}]},
         {"cmd": [GMX, "pdb2gmx", "-f", cle_pdb, "-o", pro_gro, "-water", WATER_MODEL, "-p", pro_top, "-ff", FF]},
         {"cmd": [GMX, "editconf", "-f", pro_gro, "-o", nbox_gro, "-c", "-d", str(DISTANCE), "-bt", "cubic"]},
         {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp.yml"),"-i","localhost,","-c","local","--extra-vars",f"src={pro_top} dst={sol_top}"]},
@@ -145,19 +145,7 @@ def system_build(base_path, pdb_path, FF, DISTANCE, WATER_MODEL, WATERBOXFILE, G
     try:
         for c in cmds:
             key = next(iter(c))
-            if key == "ansible":
-                src, dst = c["file"]
-                if c["ansible"] == "copy":
-                    asb_cmd = ["ansible-playbook", os.path.join(SHELL_DIR, "cp.yml"), "-i", "localhost,", "-c", "local", "--extra-vars", f"src={shlex.quote(str(src))} dst={shlex.quote(str(dst))}" ]
-                    subprocess.run(asb_cmd, check=True)
-                elif c["ansible"] == "grep":
-                    exclude = c["-v"]
-                    asb_cmd = [ "ansible-playbook", os.path.join(BASE_DIR, "grep.yml"), "-i", "localhost,", "-c", "local", "--extra-vars", f"before_path={shlex.quote(str(src))} " f"after_path={shlex.quote(str(dst))} " f"exclude_string={shlex.quote(exclude)}"]
-                    subprocess.run(asb_cmd, check=True)
-                else:
-                    return False
             elif key == "cmd":
-                print(c["cmd"])
                 subprocess.run(c["cmd"])
             elif key == "cmd-input":
                 subprocess.run(c["cmd-input"], input=c["input"], text=True)
