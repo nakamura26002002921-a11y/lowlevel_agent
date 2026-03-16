@@ -186,7 +186,7 @@ def minimization(base_path, GMX="gmx"):
     ]
     try:
         for c in cmds:
-            subprocess.run(c, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(c)
         return True
     except:
         return False
@@ -211,7 +211,7 @@ def nvt(base_path, GMX="gmx"):
     ]
     try:
         for c in cmds:
-            subprocess.run(c, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(c)
         return True
     except:
         return False
@@ -234,7 +234,7 @@ def npt_br(base_path, GMX="gmx"):
     ]
     try:
         for c in cmds:
-            subprocess.run(c, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+            subprocess.run(c, check=True)
         return True
     except subprocess.CalledProcessError:
         return False
