@@ -138,7 +138,7 @@ def system_build(base_path, pdb_path, FF, DISTANCE, WATER_MODEL, WATERBOXFILE, G
         {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp.yml"),"-i","localhost,","-c","local","--extra-vars",json.dumps({"src":pro_top,"dst"=sol_top})]},
         {"cmd": [GMX, "solvate", "-cp", nbox_gro, "-cs", WATERBOXFILE, "-o", sol_gro, "-p", sol_top]},
         {"cmd": [GMX, "grompp", "-f", ions_mdp, "-c", sol_gro, "-p", sol_top, "-o", ions_tpr, "-maxwarn", "1"]}, 
-        {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp.yml"),"-i","localhost,","-c","local","--extra-vars",json.dumps({"src":sol_top,"dst"=ions_top})},
+        {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp.yml"),"-i","localhost,","-c","local","--extra-vars",json.dumps({"src":sol_top,"dst"=ions_top})]},
         {"cmd-input": [GMX, "genion", "-s", ions_tpr, "-o", ions_gro, "-p", ions_top, "-pname", "NA", "-nname", "CL", "-neutral"], "input": "SOL\n"},
         {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp.yml"),"-i","localhost,","-c","local","--extra-vars",json.dumps({"src":ions_gro,"dst"=md_gro})]},
         {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp.yml"),"-i","localhost,","-c","local","--extra-vars",json.dumps({"src":ions_top,"dst"=md_top})]},
