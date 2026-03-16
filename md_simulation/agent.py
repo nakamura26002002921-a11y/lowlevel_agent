@@ -157,9 +157,6 @@ def system_build(base_path, pdb_path, FF, DISTANCE, WATER, WATER_MODEL, GMX="gmx
                 subprocess.run(c["cmd"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             elif key == "cmd-input":
                 subprocess.run(c["cmd-input"], input=c["input"], text=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            elif key == "copy":
-                src, dst = c["copy"]
-                shutil.copy(src, dst)
             else:
                 return False
             print(f"Done {key}")
