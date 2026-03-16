@@ -156,9 +156,9 @@ def system_build(base_path, pdb_path, FF, DISTANCE, WATER, WATER_MODEL, GMX="gmx
                     return False
             elif key == "cmd":
                 print(c["cmd"])
-                subprocess.run(c["cmd"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.run(c["cmd"])
             elif key == "cmd-input":
-                subprocess.run(c["cmd-input"], input=c["input"], text=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.run(c["cmd-input"], input=c["input"], text=True)
             else:
                 return False
             print(f"Done {key}")
