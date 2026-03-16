@@ -11,7 +11,7 @@
 
   tasks:
     - name: Filter lines containing a specific string
-      ansible.builtin.shell: grep "{{ exclude_string }}" "{{ before_path }}" > "{{ after_path }}"
+      ansible.builtin.shell: grep -v "{{ exclude_string }}" "{{ before_path }}" > "{{ after_path }}"
       args:
         executable: /bin/bash
       changed_when: false
