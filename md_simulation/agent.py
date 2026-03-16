@@ -135,10 +135,10 @@ def system_build(base_path, pdb_path, FF, DISTANCE, WATER, WATER_MODEL, GMX="gmx
         {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp.yml"),"-i","localhost,","-c","local","--extra-vars",f"src={pro_top} dst={sol_top}"]},
         {"cmd": [GMX, "solvate", "-cp", nbox_gro, "-cs", WATER_MODEL, "-o", sol_gro, "-p", sol_top]},
         {"cmd": [GMX, "grompp", "-f", ions_mdp, "-c", sol_gro, "-p", sol_top, "-o", ions_tpr, "-maxwarn", "1"]}, 
-        {"ansible": "copy","file":(sol_top, ions_top)},
+        {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp.yml"),"-i","localhost,","-c","local","--extra-vars",f"src={sol_top} dst={ions_top}"]},
         {"cmd-input": [GMX, "genion", "-s", ions_tpr, "-o", ions_gro, "-p", ions_top, "-pname", "NA", "-nname", "CL", "-neutral"], "input": "SOL\n"},
-        {"ansible": "copy","file":(ions_gro, md_gro)},
-        {"ansible": "copy","file":(ions_top, md_top)},
+        {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp.yml"),"-i","localhost,","-c","local","--extra-vars",f"src={ions_gro} dst={md_gro}"]},
+        {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp.yml"),"-i","localhost,","-c","local","--extra-vars",f"src={ions_top} dst={md_top}"]},
     ]
     try:
         for c in cmds:
