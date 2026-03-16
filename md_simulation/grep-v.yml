@@ -1,0 +1,18 @@
+---
+- name: Filter lines from files
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    before_path: ""
+    after_path: ""
+    exclude_string: ""
+
+  tasks:
+    - name: Filter lines containing a specific string
+      ansible.builtin.shell: grep -v "{{ exclude_string }}" "{{ before_path }}" > "{{ after_path }}"
+      args:
+        executable: /bin/bash
+      changed_when: false
+#
