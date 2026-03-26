@@ -1,17 +1,18 @@
-- hosts: localhost
+- name: Install Python from source
+  hosts: localhost
   connection: local
-  gather_facts: yes
-  become: yes
+  gather_facts: true
+  become: true
 
   vars:
-    VERSION: "{{ VERSION | default('3.11.2') }}"
-    INSTALL_PATH: "{{ INSTALL_PATH | default('/opt/python311') }}"
-    SRC_DIR: "/tmp/Python-{{ VERSION }}"
-    TARBALL: "/tmp/python.tgz"
+    version: "{{ version | default('3.11.2') }}"
+    install_path: "{{ install_path | default('/opt/python311') }}"
+    src_dir: "/tmp/Python-{{ version }}"
+    tarball: "/tmp/python.tgz"
 
   tasks:
     - name: Ensure build dependencies are installed
-      apt:
+      ansible.builtin.apt:
         name:
           - build-essential
           - libssl-dev
@@ -22,26 +23,27 @@
           - libreadline-dev
           - libbz2-dev
         state: present
-        update_cache: yes
+        update_cache: true
 
     - name: Download Python source tarball
-      get_url:
-        url: "https://www.python.org/ftp/python/{{ VERSION }}/Python-{{ VERSION }}.tgz"
-        dest: "{{ TARBALL }}"
-        mode: '0644'
+      ansible.builtin.get_url:
+        url: "https://www.python.org/ftp/python/{{ version }}/Python-{{ version }}.tgz"
+        dest: "{{ tarball }}"
+        mode: "0644"
 
     - name: Extract Python source
-      unarchive:
-        src: "{{ TARBALL }}"
+      ansible.builtin.unarchive:
+        src: "{{ tarball }}"
         dest: "/tmp"
-        remote_src: yes
+        remote_src: true
 
-    - name: Configure, build and install Python (idempotent)
-      shell: |
+    - name: Build and install Python
+      ansible.builtin.shell: |
         set -e
-        cd {{ SRC_DIR }}
-        ./configure --prefix={{ INSTALL_PATH }}
+        cd {{ src_dir }}
+        ./configure --prefix={{ install_path }}
         make -j$(nproc)
         make install
       args:
-        creates: "{{ INSTALL_PATH }}/bin/python3"
+        creates: "{{ install_path }}/bin/python3"
+#
