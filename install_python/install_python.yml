@@ -5,8 +5,8 @@
   become: true
 
   vars:
-    version: "{{ version | default('3.11.2') }}"
-    install_path: "{{ install_path | default('/opt/python311') }}"
+    version: "{{ VERSION | default('3.11.2') }}"
+    install_path: "{{ INSTALL_PATH | default('/opt/python311') }}"
     src_dir: "/tmp/Python-{{ version }}"
     tarball: "/tmp/python.tgz"
 
