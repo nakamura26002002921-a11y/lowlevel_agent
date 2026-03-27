@@ -1,14 +1,14 @@
 - name: Install Python from source
   hosts: localhost
   connection: local
-  gather_facts: true
+  gather_facts: false
   become: true
 
   vars:
-    version: "{{ VERSION | default('3.11.2') }}"
-    install_path: "{{ INSTALL_PATH | default('/opt/python311') }}"
+    version: "{{ VERSION | default('3.10.11') }}"
+    install_path: "{{ INSTALL_PATH | default('/usr/local/python3.10') }}"
     src_dir: "/tmp/Python-{{ version }}"
-    tarball: "/tmp/python.tgz"
+    tarball: "/tmp/Python-{{ version }}.tgz"
 
   tasks:
     - name: Ensure build dependencies are installed
@@ -22,8 +22,19 @@
           - libsqlite3-dev
           - libreadline-dev
           - libbz2-dev
+          - liblzma-dev
         state: present
         update_cache: true
+
+    - name: Remove old source directory
+      ansible.builtin.file:
+        path: "{{ src_dir }}"
+        state: absent
+
+    - name: Remove old tarball
+      ansible.builtin.file:
+        path: "{{ tarball }}"
+        state: absent
 
     - name: Download Python source tarball
       ansible.builtin.get_url:
@@ -37,13 +48,24 @@
         dest: "/tmp"
         remote_src: true
 
+    - name: Check extracted directory
+      ansible.builtin.stat:
+        path: "{{ src_dir }}"
+      register: python_src
+
+    - name: Fail if source not found
+      ansible.builtin.fail:
+        msg: "Python source directory not found at {{ src_dir }}"
+      when: not python_src.stat.exists
+
     - name: Build and install Python
       ansible.builtin.shell: |
         set -e
         cd {{ src_dir }}
-        ./configure --prefix={{ install_path }}
+        ./configure --prefix={{ install_path }} --enable-optimizations
         make -j$(nproc)
         make install
       args:
         creates: "{{ install_path }}/bin/python3"
+
 #
