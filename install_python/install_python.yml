@@ -23,6 +23,9 @@
           - libreadline-dev
           - libbz2-dev
           - liblzma-dev
+          - tk-dev
+          - uuid-dev
+          - xz-utils
         state: present
         update_cache: true
 
@@ -64,7 +67,7 @@
         cd {{ src_dir }}
         ./configure --prefix={{ install_path }} --enable-optimizations
         make -j$(nproc)
-        make install
+        make altinstall
       args:
         creates: "{{ install_path }}/bin/python3"
 
