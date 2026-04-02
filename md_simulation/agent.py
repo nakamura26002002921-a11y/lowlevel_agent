@@ -101,7 +101,7 @@ def get_pdb(base_path, pdbid):
     return out_path
 
 
-def system_build(base_path, pdb_path, FF, DISTANCE, WATER_MODEL, WATERBOXFILE, GMX="gmx"):
+def system_build(base_path, pdb_path, FF, DISTANCE, WATER_MODEL, WATERBOXFILE, GMX="gmx", PYMOL="pymol"):
     if not base_path:
         raise ValueError("BASEPATH is required")
     if not pdb_path:
@@ -132,7 +132,7 @@ def system_build(base_path, pdb_path, FF, DISTANCE, WATER_MODEL, WATERBOXFILE, G
     md_top      = os.path.join(sys_dir, "MD.top")
 
     cmds = [
-        {"cmd": [ "ansible-playbook", os.path.join(BASE_DIR, "grep.yml"), "-i", "localhost,", "-c", "local", "--extra-vars",json.dumps({"src":pdb_path,"dst":cle_pdb,"exstr":"HETATM"})]},
+        {"cmd": [PYMOL, "-cq", "-d", f"load {pdb_path}; remove not polymer; save {cle_pdb}; quit"]},
         {"cmd": [GMX, "pdb2gmx", "-f", cle_pdb, "-o", pro_gro, "-water", WATER_MODEL, "-p", pro_top, "-ff", FF]},
         {"cmd": [GMX, "editconf", "-f", pro_gro, "-o", nbox_gro, "-c", "-d", str(DISTANCE), "-bt", "cubic"]},
         {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp.yml"),"-i","localhost,","-c","local","--extra-vars",json.dumps({"src":pro_top,"dst":sol_top})]},
