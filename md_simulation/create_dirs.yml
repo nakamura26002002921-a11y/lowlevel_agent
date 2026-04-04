@@ -1,5 +1,5 @@
 - hosts: all
-  become: yes
+  become: no
 
   vars:
     DIRS:
@@ -16,15 +16,11 @@
       file:
         path: "{{ PATH }}"
         state: directory
-        owner: root
-        group: root
         mode: '0755'
 
     - name: Create required subdirectories under PATH
       file:
         path: "{{ PATH }}/{{ item }}"
         state: directory
-        owner: root
-        group: root
         mode: '0755'
       loop: "{{ DIRS }}"
