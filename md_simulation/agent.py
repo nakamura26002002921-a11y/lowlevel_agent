@@ -18,6 +18,19 @@ def initialization(base_path):
     cmd = ["ansible-playbook", playbook_path, "-i", "localhost,", "-c", "local", "--extra-vars", f"PATH={shlex.quote(str(base_path))}"]
     subprocess.run(cmd, check=True)
 
+def copy_mdp(base_path, reference_mdp_path):
+    if not base_path:
+        raise ValueError("PATH is required.")
+    if not reference_mdp_path:
+        raise ValueError("PATH is required.")
+    mdp_dir = os.path.join(base_path, "mdp")
+    cmd = ["ansible-playbook",os.path.join(SHELL_DIR,"cp.yml"),"-i","localhost,","-c","local","--extra-vars",json.dumps({"src":reference_mdp_path,"dst":mdp_dir})]
+    try:
+        subprocess.run(cmd)
+        return True
+    except:
+        return False
+
 def simulation_set(base_path, simulation_information = None):    
     if not base_path:
         raise ValueError("PATH is required.")
