@@ -6,6 +6,8 @@ import shlex
 import shutil
 from pathlib import Path
 import json
+from pdbfixer import PDBFixer
+from openmm.app import PDBFile
 
 BASE_DIR = os.path.dirname(__file__)
 SHELL_DIR = str(Path(__file__).parent.parent / "shellcommands")
@@ -29,6 +31,29 @@ def copy_mdp(base_path, reference_mdp_path):
         return True
     except:
         return False
+
+def get_pdb(base_path, pdbid):
+    if not base_path:
+        raise ValueError("PATH is required.")
+    if not pdbid:
+        raise ValueError("pdbid is required.")
+    sys_dir = os.path.join(base_path, "sys")
+    url = f"https://files.rcsb.org/download/{pdbid}.pdb"
+    out_path = os.path.join(sys_dir, f"{pdbid}.pdb")
+    r = requests.get(url, timeout=60)
+    r.raise_for_status()
+    with open(out_path, "wb") as f:
+        f.write(r.content)
+
+def fix_pdb():
+    fixer = PDBFixer(filename = out_path)
+    fixer.findMissingResidues()
+    fixer.findMissingAtoms()
+    fixer.addMissingAtoms()
+    fixer.addMissingHydrogens(pH=7.0)
+    with open('output.pdb', 'w') as f:
+        PDBFile.writeFile(fixer.topology, fixer.positions, f)
+    
 
 '''
 from shinka.llm.query import query
@@ -100,22 +125,8 @@ def simulation_set(base_path, simulation_information = None):
         return False
 '''
 
-def get_pdb(base_path, pdbid):
-    if not base_path:
-        raise ValueError("PATH is required.")
-    if not pdbid:
-        raise ValueError("pdbid is required.")
-    sys_dir = os.path.join(base_path, "sys")
-    url = f"https://files.rcsb.org/download/{pdbid}.pdb"
-    out_path = os.path.join(sys_dir, f"{pdbid}.pdb")
-    r = requests.get(url, timeout=60)
-    r.raise_for_status()
-    with open(out_path, "wb") as f:
-        f.write(r.content)
-    return out_path
 
-
-def system_build(base_path, pdb_path, FF, DISTANCE, WATER_MODEL, WATERBOXFILE, GMX="gmx", PYMOL="pymol"):
+def system_build(base_path, FF, DISTANCE, WATER_MODEL, WATERBOXFILE, GMX="gmx", PYMOL="pymol"):
     if not base_path:
         raise ValueError("BASEPATH is required")
     if not pdb_path:
@@ -146,7 +157,6 @@ def system_build(base_path, pdb_path, FF, DISTANCE, WATER_MODEL, WATERBOXFILE, G
     md_top      = os.path.join(sys_dir, "MD.top")
 
     cmds = [
-        {"cmd": [PYMOL, "-cq", "-d", f"load {pdb_path}; remove not polymer; save {cle_pdb}; quit"]},
         {"cmd": [GMX, "pdb2gmx", "-f", cle_pdb, "-o", pro_gro, "-water", WATER_MODEL, "-p", pro_top, "-ff", FF]},
         {"cmd": [GMX, "editconf", "-f", pro_gro, "-o", nbox_gro, "-c", "-d", str(DISTANCE), "-bt", "cubic"]},
         {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp_file.yml"),"-i","localhost,","-c","local","--extra-vars",json.dumps({"src":pro_top,"dst":sol_top})]},
