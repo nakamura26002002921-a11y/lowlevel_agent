@@ -1,6 +1,6 @@
 import subprocess
 import os
-from shinka.llm.query import query
+#from shinka.llm.query import query
 import re
 import requests
 import shlex
@@ -24,13 +24,14 @@ def copy_mdp(base_path, reference_mdp_path):
     if not reference_mdp_path:
         raise ValueError("PATH is required.")
     mdp_dir = os.path.join(base_path, "mdp")
-    cmd = ["ansible-playbook",os.path.join(SHELL_DIR,"cp.yml"),"-i","localhost,","-c","local","--extra-vars",json.dumps({"src":reference_mdp_path,"dst":mdp_dir})]
+    cmd = ["ansible-playbook",os.path.join(SHELL_DIR,"cp_dir.yml"),"-i","localhost,","-c","local","--extra-vars",json.dumps({"src":reference_mdp_path,"dst":mdp_dir})]
     try:
         subprocess.run(cmd)
         return True
     except:
         return False
 
+'''
 def simulation_set(base_path, simulation_information = None):    
     if not base_path:
         raise ValueError("PATH is required.")
@@ -97,7 +98,7 @@ def simulation_set(base_path, simulation_information = None):
         return water_model, force_field,  waterboxfile, distance
     except:
         return False
-
+'''
 
 def get_pdb(base_path, pdbid):
     if not base_path:
@@ -148,13 +149,13 @@ def system_build(base_path, pdb_path, FF, DISTANCE, WATER_MODEL, WATERBOXFILE, G
         {"cmd": [PYMOL, "-cq", "-d", f"load {pdb_path}; remove not polymer; save {cle_pdb}; quit"]},
         {"cmd": [GMX, "pdb2gmx", "-f", cle_pdb, "-o", pro_gro, "-water", WATER_MODEL, "-p", pro_top, "-ff", FF]},
         {"cmd": [GMX, "editconf", "-f", pro_gro, "-o", nbox_gro, "-c", "-d", str(DISTANCE), "-bt", "cubic"]},
-        {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp.yml"),"-i","localhost,","-c","local","--extra-vars",json.dumps({"src":pro_top,"dst":sol_top})]},
+        {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp_file.yml"),"-i","localhost,","-c","local","--extra-vars",json.dumps({"src":pro_top,"dst":sol_top})]},
         {"cmd": [GMX, "solvate", "-cp", nbox_gro, "-cs", WATERBOXFILE, "-o", sol_gro, "-p", sol_top]},
         {"cmd": [GMX, "grompp", "-f", ions_mdp, "-c", sol_gro, "-p", sol_top, "-o", ions_tpr, "-maxwarn", "1"]}, 
-        {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp.yml"),"-i","localhost,","-c","local","--extra-vars",json.dumps({"src":sol_top,"dst":ions_top})]},
+        {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp_file.yml"),"-i","localhost,","-c","local","--extra-vars",json.dumps({"src":sol_top,"dst":ions_top})]},
         {"cmd-input": [GMX, "genion", "-s", ions_tpr, "-o", ions_gro, "-p", ions_top, "-pname", "NA", "-nname", "CL", "-neutral"], "input": "SOL\n"},
-        {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp.yml"),"-i","localhost,","-c","local","--extra-vars",json.dumps({"src":ions_gro,"dst":md_gro})]},
-        {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp.yml"),"-i","localhost,","-c","local","--extra-vars",json.dumps({"src":ions_top,"dst":md_top})]},
+        {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp_file.yml"),"-i","localhost,","-c","local","--extra-vars",json.dumps({"src":ions_gro,"dst":md_gro})]},
+        {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp_file.yml"),"-i","localhost,","-c","local","--extra-vars",json.dumps({"src":ions_top,"dst":md_top})]},
     ]
     try:
         for c in cmds:
