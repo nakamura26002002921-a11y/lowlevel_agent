@@ -6,7 +6,7 @@
   tasks:
     - name: Copy directory
       ansible.posix.synchronize:
-        src: "{{ src }}"
-        dest: "{{ dst }}"
+        src: "{{ src }}/"
+        dest: "{{ dst }}/"
         recursive: true
 #
