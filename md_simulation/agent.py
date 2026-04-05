@@ -1,6 +1,5 @@
 import subprocess
 import os
-#from shinka.llm.query import query
 import re
 import requests
 import shlex
@@ -32,6 +31,7 @@ def copy_mdp(base_path, reference_mdp_path):
         return False
 
 '''
+from shinka.llm.query import query
 def simulation_set(base_path, simulation_information = None):    
     if not base_path:
         raise ValueError("PATH is required.")
