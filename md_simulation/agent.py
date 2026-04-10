@@ -44,15 +44,7 @@ def get_pdb(base_path, pdbid):
     r.raise_for_status()
     with open(out_path, "wb") as f:
         f.write(r.content)
-
-def fix_pdb():
-    fixer = PDBFixer(filename = out_path)
-    fixer.findMissingResidues()
-    fixer.findMissingAtoms()
-    fixer.addMissingAtoms()
-    fixer.addMissingHydrogens(pH=7.0)
-    with open('output.pdb', 'w') as f:
-        PDBFile.writeFile(fixer.topology, fixer.positions, f)
+    return out_path
     
 
 '''
@@ -126,7 +118,7 @@ def simulation_set(base_path, simulation_information = None):
 '''
 
 
-def system_build(base_path, FF, DISTANCE, WATER_MODEL, WATERBOXFILE, GMX="gmx", PYMOL="pymol"):
+def system_build(base_path, pdb_path, FF, DISTANCE, WATER_MODEL, WATERBOXFILE, GMX="gmx", PYMOL="pymol"):
     if not base_path:
         raise ValueError("BASEPATH is required")
     if not pdb_path:
@@ -139,7 +131,7 @@ def system_build(base_path, FF, DISTANCE, WATER_MODEL, WATERBOXFILE, GMX="gmx", 
         raise ValueError("water-model is required")
     if not WATERBOXFILE:
         raise ValueError("water box file is required")
-    
+
     sys_dir     = os.path.join(base_path, "sys")
     mdp_dir     = os.path.join(base_path, "mdp")
 
@@ -152,16 +144,17 @@ def system_build(base_path, FF, DISTANCE, WATER_MODEL, WATERBOXFILE, GMX="gmx", 
     ions_tpr    = os.path.join(sys_dir, "ions.tpr")
     ions_mdp    = os.path.join(mdp_dir, "ions.mdp")
     ions_gro    = os.path.join(sys_dir, "ions.gro")
-    ions_top    = os.path.join(sys_dir, "ions.top")    
+    ions_top    = os.path.join(sys_dir, "ions.top")
     md_gro      = os.path.join(sys_dir, "MD.gro")
     md_top      = os.path.join(sys_dir, "MD.top")
 
     cmds = [
+        {"cmd": [PYMOL, "-cq", "-d", f"load {pdb_path}; remove not polymer; save {cle_pdb}; quit"]},
         {"cmd": [GMX, "pdb2gmx", "-f", cle_pdb, "-o", pro_gro, "-water", WATER_MODEL, "-p", pro_top, "-ff", FF]},
         {"cmd": [GMX, "editconf", "-f", pro_gro, "-o", nbox_gro, "-c", "-d", str(DISTANCE), "-bt", "cubic"]},
         {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp_file.yml"),"-i","localhost,","-c","local","--extra-vars",json.dumps({"src":pro_top,"dst":sol_top})]},
         {"cmd": [GMX, "solvate", "-cp", nbox_gro, "-cs", WATERBOXFILE, "-o", sol_gro, "-p", sol_top]},
-        {"cmd": [GMX, "grompp", "-f", ions_mdp, "-c", sol_gro, "-p", sol_top, "-o", ions_tpr, "-maxwarn", "1"]}, 
+        {"cmd": [GMX, "grompp", "-f", ions_mdp, "-c", sol_gro, "-p", sol_top, "-o", ions_tpr, "-maxwarn", "1"]},
         {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp_file.yml"),"-i","localhost,","-c","local","--extra-vars",json.dumps({"src":sol_top,"dst":ions_top})]},
         {"cmd-input": [GMX, "genion", "-s", ions_tpr, "-o", ions_gro, "-p", ions_top, "-pname", "NA", "-nname", "CL", "-neutral"], "input": "SOL\n"},
         {"cmd": ["ansible-playbook",os.path.join(SHELL_DIR,"cp_file.yml"),"-i","localhost,","-c","local","--extra-vars",json.dumps({"src":ions_gro,"dst":md_gro})]},
