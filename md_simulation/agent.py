@@ -5,7 +5,6 @@ import requests
 import shlex
 import shutil
 import json
-from pdbfixer import PDBFixer
 from openmm.app import PDBFile
 
 BASE_DIR = os.path.dirname(__file__)
