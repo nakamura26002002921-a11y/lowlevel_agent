@@ -4,7 +4,6 @@ import re
 import requests
 import shlex
 import shutil
-from pathlib import Path
 import json
 from pdbfixer import PDBFixer
 from openmm.app import PDBFile
