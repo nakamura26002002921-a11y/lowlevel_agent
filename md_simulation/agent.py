@@ -187,8 +187,8 @@ def minimization(base_path, GMX="gmx"):
     em_prefix   = os.path.join(em_dir, "em")
 
     cmds = [
-        [GMX,"grompp","-f",em_mdp,"-c",md_gro,"-p",md_top,"-o",em_tpr],
-        [GMX,"mdrun","-v","-deffnm",em_prefix]
+        [GMX, "grompp", "-f", em_mdp, "-c", md_gro, "-p", md_top, "-o", em_tpr, "-maxwarn", "1"],
+        [GMX, "mdrun","-v","-deffnm",em_prefix]
     ]
     try:
         for c in cmds:
@@ -212,7 +212,7 @@ def nvt(base_path, GMX="gmx"):
     nvt_prefix  = os.path.join(nvt_dir, "nvt")
 
     cmds = [
-        [GMX, "grompp", "-f", nvt_mdp, "-c", em_gro, "-r", em_gro, "-p", md_top, "-o", nvt_tpr],
+        [GMX, "grompp", "-f", nvt_mdp, "-c", em_gro, "-r", em_gro, "-p", md_top, "-o", nvt_tpr, "-maxwarn", "1"],
         [GMX, "mdrun", "-deffnm", nvt_prefix]
     ]
     try:
@@ -235,7 +235,7 @@ def npt_br(base_path, GMX="gmx"):
     npt_br_tpr  = os.path.join(npt_br_dir, "npt_br.tpr")
     npt_br_prefix = os.path.join(npt_br_dir, "npt_br")
     cmds = [
-        [GMX, "grompp", "-f", npt_br_mdp, "-c", nvt_gro, "-r", nvt_gro, "-p", md_top, "-o", npt_br_tpr],
+        [GMX, "grompp", "-f", npt_br_mdp, "-c", nvt_gro, "-r", nvt_gro, "-p", md_top, "-o", npt_br_tpr, "-maxwarn", "1"],
         [GMX, "mdrun", "-deffnm", npt_br_prefix]
     ]
     try:
@@ -265,7 +265,7 @@ def npt_pr(base_path, GMX="gmx"):
     npt_pr_prefix = os.path.join(npt_pr_dir, "npt_pr")
 
     cmds = [
-        [GMX, "grompp", "-f", npt_pr_mdp, "-c", npt_br_gro, "-r", npt_br_gro, "-p", md_top, "-o", npt_pr_tpr],
+        [GMX, "grompp", "-f", npt_pr_mdp, "-c", npt_br_gro, "-r", npt_br_gro, "-p", md_top, "-o", npt_pr_tpr, "-maxwarn", "1"],
         [GMX, "mdrun", "-deffnm", npt_pr_prefix]
     ]
 
