@@ -5,6 +5,7 @@ import requests
 import shlex
 import shutil
 import json
+from pathlib import Path
 
 BASE_DIR = os.path.dirname(__file__)
 SHELL_DIR = str(Path(__file__).parent.parent / "shellcommands")
