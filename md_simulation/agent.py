@@ -39,59 +39,75 @@ def fasta_to_pir(text, code):
     seq = "".join([l.strip() for l in text.splitlines() if not l.startswith(">")])
     return f">P1;{code}\nsequence:{code}:::::::0.00:0.00\n{seq}*"
 
+
 def get_pdb(base_path, pdbid):
     if not base_path:
         raise ValueError("base_path is required")
     if not pdbid:
         raise ValueError("pdbid is required")
+
     pdbid = pdbid.upper()
     sys_dir = os.path.join(base_path, "sys")
+
     raw_pdb = os.path.join(sys_dir, "input.pdb")
-    clean_pdb = os.path.join(sys_dir, "clean.pdb")
-    template_clean = os.path.join(sys_dir, "template_clean.pdb")
+    template_pdb = os.path.join(sys_dir, f"{pdbid}.pdb")
     pir_file = os.path.join(sys_dir, "target.pir")
     ali_file = os.path.join(sys_dir, "alignment.ali")
+    clean_pdb = os.path.join(sys_dir, "clean.pdb")
+
     url = f"https://files.rcsb.org/download/{pdbid}.pdb"
     r = requests.get(url, timeout=60)
     r.raise_for_status()
     with open(raw_pdb, "w") as f:
         f.write(r.text)
+
     cmd.load(raw_pdb, "m")
     cmd.remove("not polymer.protein")
-    cmd.save(template_clean, "m")
+    cmd.save(template_pdb, "m")
     cmd.delete("all")
+
     fasta_url = f"https://www.rcsb.org/fasta/entry/{pdbid}/download"
     r = requests.get(fasta_url, timeout=60)
     r.raise_for_status()
+
     pir = fasta_to_pir(r.text, "TARGET")
     with open(pir_file, "w") as f:
         f.write(pir)
+
     env = Environ()
-    env.io.atom_files_directory = ["."]
+    env.io.atom_files_directory = [sys_dir]
     env.io.hetatm = True
+
     aln = Alignment(env)
-    template = Model(env, file=template_clean, model_segment=('FIRST:A', 'LAST:A'))
-    aln.append_model(template, align_codes="TEMPLATE")
+
+    template = Model(env, file=template_pdb, model_segment=('FIRST:', 'LAST:'))
+    aln.append_model(template, align_codes=pdbid)
+
     aln.append(file=pir_file, align_codes="TARGET")
+
     aln.align2d()
     aln.write(file=ali_file, alignment_format="PIR")
+
     class MyModel(AutoModel):
         pass
+
     a = MyModel(
         env,
         alnfile=ali_file,
-        knowns="TEMPLATE",
+        knowns=pdbid,
         sequence="TARGET"
     )
+
     a.starting_model = 1
     a.ending_model = 1
     a.make()
-    out = "TARGET.B99990001.pdb"
+
+    out = f"{pdbid}.B99990001.pdb"
     if os.path.exists(out):
         os.rename(out, clean_pdb)
+
     print(f"[INFO] clean structure saved: {clean_pdb}")
     return clean_pdb
-
 '''
 def get_pdb(base_path, pdbid):
     if not base_path:
