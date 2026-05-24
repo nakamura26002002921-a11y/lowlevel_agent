@@ -40,65 +40,64 @@ def fasta_to_pir(text, code):
     return f">P1;{code}\nsequence:{code}:::::::0.00:0.00\n{seq}*"
 
 
-def get_pdb(base_path, pdbid):
-    if not base_path:
-        raise ValueError("base_path is required")
-    if not pdbid:
-        raise ValueError("pdbid is required")
-
-    pdbid = pdbid.upper()
-    sys_dir = os.path.join(base_path, "sys")
-
-    raw_pdb = os.path.join(sys_dir, f"{pdbid}.pdb")
-    pir_file = os.path.join(sys_dir, "target.pir")
-    ali_file = os.path.join(sys_dir, "alignment.ali")
-    clean_pdb = os.path.join(sys_dir, "clean.pdb")
-
-    url = f"https://files.rcsb.org/download/{pdbid}.pdb"
-    r = requests.get(url, timeout=60)
+def get_pdb(base_path,pdbid):
+    import os,requests
+    from modeller import *
+    from modeller.automodel import *
+    
+    pdbid=pdbid.upper()
+    sys_dir=os.path.join(base_path,"sys")
+    os.makedirs(sys_dir,exist_ok=True)
+    
+    raw_pdb=os.path.join(sys_dir,f"{pdbid}.pdb")
+    clean_pdb=os.path.join(sys_dir,"clean.pdb")
+    pir_file=os.path.join(sys_dir,"target.pir")
+    ali_file=os.path.join(sys_dir,"alignment.ali")
+    
+    r=requests.get(f"https://files.rcsb.org/download/{pdbid}.pdb",timeout=60)
     r.raise_for_status()
-    with open(raw_pdb, "w") as f:
-        f.write(r.text)
-
-    fasta_url = f"https://www.rcsb.org/fasta/entry/{pdbid}/download"
-    r = requests.get(fasta_url, timeout=60)
-    r.raise_for_status()
-
-    pir = fasta_to_pir(r.text, "TARGET")
-    with open(pir_file, "w") as f:
-        f.write(pir)
-
-    env = Environ()
-    env.io.atom_files_directory = [sys_dir]
-    env.io.hetatm = True
-
-    aln = Alignment(env)
-
-    template = Model(env, file=raw_pdb)
-    aln.append_model(template, align_codes=pdbid)
-
-    aln.append(file=pir_file, align_codes="TARGET")
-
+    open(raw_pdb,"w").write(r.text)
+    
+    fasta=requests.get(f"https://www.rcsb.org/fasta/entry/{pdbid}/download",timeout=60)
+    fasta.raise_for_status()
+    
+    def fasta_to_pir(text,code):
+    seq="".join([l.strip() for l in text.splitlines() if not l.startswith(">")])
+    return f">P1;{code}\nsequence:{code}:::::::0.00:0.00\n{seq}*"
+    
+    open(pir_file,"w").write(fasta_to_pir(fasta.text,"TARGET"))
+    
+    env=Environ()
+    env.io.atom_files_directory=[sys_dir]
+    env.io.hetatm=True
+    
+    aln=Alignment(env)
+    
+    mdl=Model(env,file=raw_pdb,model_segment=('FIRST:@','LAST:@'))
+    aln.append_model(mdl,align_codes=pdbid)
+    
+    aln.append(file=pir_file,align_codes="TARGET")
+    
     aln.align2d()
-
-    aln.write(file=ali_file, alignment_format="PIR")
-
-    class MyModel(AutoModel):
-        pass
-
-    a = MyModel(
-        env,
-        alnfile=ali_file,
-        knowns=pdbid,
-        sequence="TARGET"
-    )
-    a.starting_model = 1
-    a.ending_model = 1
+    aln.write(file=ali_file,alignment_format="PIR")
+    
+    class M(AutoModel):pass
+    
+    a=M(env,
+     alnfile=ali_file,
+     knowns=pdbid,
+     sequence="TARGET")
+    
+    a.starting_model=1
+    a.ending_model=1
     a.make()
-    out = f"{pdbid}.B99990001.pdb"
+    
+    out=f"TARGET.B99990001.pdb"
+    
     if os.path.exists(out):
-        os.rename(out, clean_pdb)
-    print(f"[INFO] clean structure saved: {clean_pdb}")
+    os.rename(out,clean_pdb)
+    
+    print(clean_pdb)
     return clean_pdb
     
 '''
