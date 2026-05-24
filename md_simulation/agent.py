@@ -30,6 +30,65 @@ def copy_mdp(base_path, reference_mdp_path):
     except:
         return False
 
+
+def fasta_to_pir(text, code):
+    seq = "".join([l.strip() for l in text.splitlines() if not l.startswith(">")])
+    return f">P1;{code}\nsequence:{code}:::::::0.00:0.00\n{seq}*"
+
+def get_pdb(base_path, pdbid):
+    if not base_path:
+        raise ValueError("base_path is required")
+    if not pdbid:
+        raise ValueError("pdbid is required")
+    pdbid = pdbid.upper()
+    sys_dir = os.path.join(base_path, "sys")
+    raw_pdb = os.path.join(sys_dir, "input.pdb")
+    clean_pdb = os.path.join(sys_dir, "clean.pdb")
+    template_clean = os.path.join(sys_dir, "template_clean.pdb")
+    pir_file = os.path.join(sys_dir, "target.pir")
+    ali_file = os.path.join(sys_dir, "alignment.ali")
+    url = f"https://files.rcsb.org/download/{pdbid}.pdb"
+    r = requests.get(url, timeout=60)
+    r.raise_for_status()
+    with open(raw_pdb, "w") as f:
+        f.write(r.text)
+    cmd.load(raw_pdb, "m")
+    cmd.remove("not polymer.protein")
+    cmd.save(template_clean, "m")
+    cmd.delete("all")
+    fasta_url = f"https://www.rcsb.org/fasta/entry/{pdbid}/download"
+    r = requests.get(fasta_url, timeout=60)
+    r.raise_for_status()
+    pir = fasta_to_pir(r.text, "TARGET")
+    with open(pir_file, "w") as f:
+        f.write(pir)
+    env = Environ()
+    env.io.atom_files_directory = ["."]
+    env.io.hetatm = True
+    aln = Alignment(env)
+    template = Model(env, file=template_clean, model_segment=('FIRST:A', 'LAST:A'))
+    aln.append_model(template, align_codes="TEMPLATE")
+    aln.append(file=pir_file, align_codes="TARGET")
+    aln.align2d()
+    aln.write(file=ali_file, alignment_format="PIR")
+    class MyModel(AutoModel):
+        pass
+    a = MyModel(
+        env,
+        alnfile=ali_file,
+        knowns="TEMPLATE",
+        sequence="TARGET"
+    )
+    a.starting_model = 1
+    a.ending_model = 1
+    a.make()
+    out = "TARGET.B99990001.pdb"
+    if os.path.exists(out):
+        os.rename(out, clean_pdb)
+    print(f"[INFO] clean structure saved: {clean_pdb}")
+    return clean_pdb
+
+'''
 def get_pdb(base_path, pdbid):
     if not base_path:
         raise ValueError("PATH is required.")
@@ -43,9 +102,7 @@ def get_pdb(base_path, pdbid):
     with open(out_path, "wb") as f:
         f.write(r.content)
     return out_path
-    
-
-'''
+   
 from shinka.llm.query import query
 def simulation_set(base_path, simulation_information = None):    
     if not base_path:
