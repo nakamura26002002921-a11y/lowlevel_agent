@@ -35,8 +35,8 @@ def copy_mdp(base_path, reference_mdp_path):
         return False
 
 
-def fasta_to_pir(text, code):
-    seq = "".join([l.strip() for l in text.splitlines() if not l.startswith(">")])
+def fasta_to_pir(text,code):
+    seq="".join([l.strip() for l in text.splitlines() if not l.startswith(">")])
     return f">P1;{code}\nsequence:{code}:::::::0.00:0.00\n{seq}*"
 
 
