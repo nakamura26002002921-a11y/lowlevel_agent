@@ -6,6 +6,10 @@ import shlex
 import shutil
 import json
 from pathlib import Path
+import sys
+from pymol import cmd
+from modeller import *
+from modeller.automodel import *
 
 BASE_DIR = os.path.dirname(__file__)
 SHELL_DIR = str(Path(__file__).parent.parent / "shellcommands")
