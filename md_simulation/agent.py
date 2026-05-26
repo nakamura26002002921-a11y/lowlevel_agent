@@ -207,13 +207,15 @@ def build_from_threading_ali(workdir,ali_file,template_code,sequence,n_models=5,
 def get_pdb(b,p):
     p=p.upper()
     w=os.path.abspath(os.path.join(b,"sys",p));os.makedirs(w,exist_ok=True)
-    pdb=f"{w}/{p}.pdb";fa=f"{w}/{p}.fasta";pir=f"{w}/{p}.pir";ali=f"{w}/{p}.ali";out=f"{w}/clean.pdb"
+    out_dir=os.path.abspath(os.path.join(b,"sys"))
+    pdb=f"{w}/{p}.pdb";fa=f"{w}/{p}.fasta";pir=f"{w}/{p}.pir";ali=f"{w}/{p}.ali"
+    clean=f"{out_dir}/clean.pdb"
     if not os.path.exists(pdb):r=requests.get(f"https://files.rcsb.org/download/{p}.pdb",timeout=60);r.raise_for_status();open(pdb,"wb").write(r.content)
     if not os.path.exists(fa):r=requests.get(f"https://www.rcsb.org/fasta/entry/{p}/download",timeout=60);r.raise_for_status();open(fa,"w").write(r.text)
     if not os.path.exists(pir):open(pir,"w").write(fasta_to_pir(open(fa).read(),"TARGET"))
     a=align2d_single(workdir=w,template_pdb=pdb,template_chain="A",query_pir=pir,query_code="TARGET")
     build_single_model(workdir=w,ali_file=a,template_code=f"{p}A",sequence="TARGET",n_models=1)
-    b=_best_dope_model(w,"TARGET");shutil.copy2(b,out);return out
+    b=_best_dope_model(w,"TARGET");shutil.copy2(b,clean);return clean
     
 '''
 def get_pdb(base_path, pdbid):
